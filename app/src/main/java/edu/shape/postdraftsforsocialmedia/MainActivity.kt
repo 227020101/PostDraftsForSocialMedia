@@ -32,7 +32,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.text.DateFormat
 import java.util.*
 
 
@@ -40,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var image_holder: ImageView
     lateinit var editText: EditText
     lateinit var mOutput: TextView
+    lateinit var editTextContent: EditText
+    lateinit var editTextPostName: EditText
 
     // member variables that hold location info
     protected var mLastLocation: Location? = null
@@ -60,6 +61,8 @@ class MainActivity : AppCompatActivity() {
         image_holder = findViewById(R.id.imageView)
         image_holder.setImageResource(R.drawable.ic_launcher_foreground)
         editText = findViewById(R.id.editTextHashtag)
+        editTextContent = findViewById(R.id.editTextContent)
+        editTextPostName = findViewById(R.id.editTextPostName)
         mOutput = findViewById(R.id.textViewLocation)
         file = File(this.filesDir, FILE_NAME)
         imageFile = File(this.filesDir, IMAGE_FILE_NAME)
@@ -70,6 +73,12 @@ class MainActivity : AppCompatActivity() {
         }
         if (sharedPreferences!!.contains(LOCATION_KEY)) {
             mOutput!!.text= sharedPreferences!!.getString(LOCATION_KEY, "")
+        }
+        if (sharedPreferences!!.contains(CONTENT_KEY)) {
+            editTextContent!!.setText(sharedPreferences!!.getString(CONTENT_KEY, ""))
+        }
+        if (sharedPreferences!!.contains(POST_KEY)) {
+            editTextPostName!!.setText(sharedPreferences!!.getString(POST_KEY, ""))
         }
         val locationPermissionRequest =
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions(),
@@ -97,7 +106,9 @@ class MainActivity : AppCompatActivity() {
         val REQUEST_IMAGE_CATPURE = 1
         val REQUEST_SELECT_IMAGE = 2
         const val TAG_KEY = "TAG_KEY"
+        const val CONTENT_KEY = "CONTENT_KEY"
         const val LOCATION_KEY = "LOCATION_KEY"
+        const val POST_KEY = "POST_KEY"
         const val FILE_NAME = "id.txt"
         const val IMAGE_FILE_NAME = "id.jpg"
     }
@@ -114,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     fun save(v: View) {
-        val data = editText!!.text.toString() + "|" + mOutput!!.text.toString()
+        val data = editText!!.text.toString() + "|" + mOutput!!.text.toString()+"|"+editTextContent!!.text.toString()+"|"+editTextPostName.text.toString()
         val bitmap = (image_holder!!.drawable as BitmapDrawable).bitmap
         try {
             outputStream = FileOutputStream(file)
@@ -139,6 +150,8 @@ class MainActivity : AppCompatActivity() {
             val data = String(bytes)
             editText!!.setText(data.split("|").toTypedArray()[0])
             mOutput!!.text = data.split("|").toTypedArray()[1]
+            editTextContent!!.setText(data.split("|").toTypedArray()[2])
+            editTextPostName!!.setText(data.split("|").toTypedArray()[3])
             inputStreamImage = FileInputStream(imageFile)
             val bitmap = BitmapFactory.decodeStream(inputStreamImage)
             inputStreamImage!!.close()
