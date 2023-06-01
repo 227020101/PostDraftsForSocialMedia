@@ -3,8 +3,10 @@ package edu.shape.postdraftsforsocialmedia
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.location.Geocoder
 import android.location.Location
@@ -27,9 +29,12 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 import java.text.DateFormat
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var image_holder: ImageView
@@ -41,7 +46,14 @@ class MainActivity : AppCompatActivity() {
     protected var mLocationRequest: LocationRequest? = null
     protected var mGeocoder: Geocoder? = null
     protected var mLocationProvider: FusedLocationProviderClient? = null
+    private var file: File? = null
+    private var imageFile: File? = null
+    private var outputStream: FileOutputStream? = null
+    private var inputStream: FileInputStream? = null
+    private var outputStreamImage: FileOutputStream? = null
+    private var inputStreamImage: FileInputStream? = null
 
+    private var sharedPreferences: SharedPreferences? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -49,6 +61,16 @@ class MainActivity : AppCompatActivity() {
         image_holder.setImageResource(R.drawable.ic_launcher_foreground)
         editText = findViewById(R.id.editTextHashtag)
         mOutput = findViewById(R.id.textViewLocation)
+        file = File(this.filesDir, FILE_NAME)
+        imageFile = File(this.filesDir, IMAGE_FILE_NAME)
+        sharedPreferences = getSharedPreferences("MySharedPreMain", MODE_PRIVATE)
+
+        if (sharedPreferences!!.contains(TAG_KEY)) {
+            editText!!.setText(sharedPreferences!!.getString(TAG_KEY, ""))
+        }
+        if (sharedPreferences!!.contains(LOCATION_KEY)) {
+            mOutput!!.text= sharedPreferences!!.getString(LOCATION_KEY, "")
+        }
         val locationPermissionRequest =
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions(),
                 ActivityResultCallback<Map<String, Boolean>> { result: Map<String, Boolean> ->
@@ -74,6 +96,10 @@ class MainActivity : AppCompatActivity() {
     companion object {
         val REQUEST_IMAGE_CATPURE = 1
         val REQUEST_SELECT_IMAGE = 2
+        const val TAG_KEY = "TAG_KEY"
+        const val LOCATION_KEY = "LOCATION_KEY"
+        const val FILE_NAME = "id.txt"
+        const val IMAGE_FILE_NAME = "id.jpg"
     }
 
     fun onCameraClicked(v: View) {
@@ -85,6 +111,41 @@ class MainActivity : AppCompatActivity() {
         val pickerIntent = Intent(MediaStore.ACTION_PICK_IMAGES)
         if (pickerIntent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(pickerIntent, REQUEST_SELECT_IMAGE)
+        }
+    }
+    fun save(v: View) {
+        val data = editText!!.text.toString() + "|" + mOutput!!.text.toString()
+        val bitmap = (image_holder!!.drawable as BitmapDrawable).bitmap
+        try {
+            outputStream = FileOutputStream(file)
+            outputStream!!.write(data.toByteArray())
+            outputStream!!.close()
+            outputStreamImage = FileOutputStream(imageFile)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStreamImage)
+            outputStreamImage!!.flush()
+            outputStreamImage!!.close()
+            Toast.makeText(this, "data saved", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    fun load(v: View?) {
+        val length = file!!.length().toInt()
+        val bytes = ByteArray(length)
+        try {
+            inputStream = FileInputStream(file)
+            inputStream!!.read(bytes)
+            inputStream!!.close()
+            val data = String(bytes)
+            editText!!.setText(data.split("|").toTypedArray()[0])
+            mOutput!!.text = data.split("|").toTypedArray()[1]
+            inputStreamImage = FileInputStream(imageFile)
+            val bitmap = BitmapFactory.decodeStream(inputStreamImage)
+            inputStreamImage!!.close()
+            image_holder.setImageBitmap(bitmap)
+            Toast.makeText(baseContext, "data loaded", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
