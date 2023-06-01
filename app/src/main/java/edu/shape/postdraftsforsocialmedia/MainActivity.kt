@@ -39,13 +39,12 @@ import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
-    // weather url to get JSON
-    var weather_url1 = ""
+
 
     // api id for url
-    var api_id1 = "b5998796c4cf4407a86c44f67361b265"
+    private var api_id1 = "b5998796c4cf4407a86c44f67361b265"
 
-    lateinit var image_holder: ImageView
+    private lateinit var image_holder: ImageView
     lateinit var editText: EditText
     lateinit var mOutput: TextView
     lateinit var editTextContent: EditText
@@ -53,10 +52,12 @@ class MainActivity : AppCompatActivity() {
     lateinit var textViewWeather: TextView
 
     // member variables that hold location info
-    protected var mLastLocation: Location? = null
-    protected var mLocationRequest: LocationRequest? = null
-    protected var mGeocoder: Geocoder? = null
-    protected var mLocationProvider: FusedLocationProviderClient? = null
+    private var mLastLocation: Location? = null
+    private var mLocationRequest: LocationRequest? = null
+    private var LatitudeText :String? =""
+    private var LongitudeText :String?  =""
+    private var mGeocoder: Geocoder? = null
+    private var mLocationProvider: FusedLocationProviderClient? = null
     private var file: File? = null
     private var imageFile: File? = null
     private var outputStream: FileOutputStream? = null
@@ -100,6 +101,19 @@ class MainActivity : AppCompatActivity() {
                     val coarseLocationGranted = result.getOrDefault(
                         Manifest.permission.ACCESS_COARSE_LOCATION, false
                     )
+                    if (fineLocationGranted != null && fineLocationGranted) {
+                        // Precise location access granted.
+                        // permissionOk = true;
+                        Toast.makeText(this, "location permission granted", Toast.LENGTH_SHORT).show()
+                    } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                        // Only approximate location access granted.
+                        // permissionOk = true;
+                        Toast.makeText(this, "location permission granted", Toast.LENGTH_SHORT).show()
+                    } else {
+                        // permissionOk = false;
+                        // No location access granted.
+                        Toast.makeText(this, "location permission not granted", Toast.LENGTH_SHORT).show()
+                    }
                 })
         locationPermissionRequest.launch(
             arrayOf(
@@ -111,7 +125,7 @@ class MainActivity : AppCompatActivity() {
         mLocationRequest!!.interval = 10000
         mLocationRequest!!.fastestInterval = 5000
         mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-
+        locate()
     }
 
     companion object {
@@ -199,13 +213,6 @@ class MainActivity : AppCompatActivity() {
                 this, Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return
         }
         mLocationRequest?.let {
@@ -213,6 +220,8 @@ class MainActivity : AppCompatActivity() {
                 it, object : LocationCallback() {
                     override fun onLocationResult(result: LocationResult) {
                         mLastLocation = result.lastLocation!!
+                        LatitudeText= mLastLocation!!.latitude.toString()
+                        LongitudeText = mLastLocation!!.longitude.toString()
                     }
                 }, Looper.getMainLooper()
             )
@@ -260,9 +269,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun getTemp() {
         // Instantiate the RequestQueue.
-        if (mLastLocation != null) {
+        if (LatitudeText  != "") {
             val url: String =
-                "https://api.weatherbit.io/v2.0/current?" + "lat=" + mLastLocation?.latitude.toString() + "&lon=" + mLastLocation?.longitude.toString() + "&key=" + api_id1
+                "https://api.weatherbit.io/v2.0/current?" + "lat=" + LatitudeText + "&lon=" + LongitudeText + "&key=" + api_id1
             var client = OkHttpClient()
 //        Toast.makeText(this, mLastLocation?.latitude.toString(), Toast.LENGTH_SHORT).show()
 //        val url ="https://api.weatherbit.io/v2.0/current?lat=35.7796&lon=-78.6382&key=b5998796c4cf4407a86c44f67361b265"
@@ -285,7 +294,7 @@ class MainActivity : AppCompatActivity() {
                         val showResult = jsonArray.getJSONObject(0)
                         val weatherObject = showResult.getJSONObject("weather")
 
-                        textViewWeather.text ="Weather: "+ weatherObject.getString("description")+" "+ showResult.getString("temp") + " deg Celsius in " + showResult.getString("city_name")
+                        textViewWeather.text ="Weather: "+ weatherObject.getString("description")+" "+ showResult.getString("temp") + " deg Celsius"
                     }
                 }
             })
