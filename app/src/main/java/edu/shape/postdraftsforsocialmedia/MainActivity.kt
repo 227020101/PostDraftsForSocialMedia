@@ -14,7 +14,6 @@ import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.provider.MediaStore
@@ -23,11 +22,15 @@ import android.widget.*
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.*
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
+import okhttp3.*
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -36,11 +39,18 @@ import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
+    // weather url to get JSON
+    var weather_url1 = ""
+
+    // api id for url
+    var api_id1 = "b5998796c4cf4407a86c44f67361b265"
+
     lateinit var image_holder: ImageView
     lateinit var editText: EditText
     lateinit var mOutput: TextView
     lateinit var editTextContent: EditText
     lateinit var editTextPostName: EditText
+    lateinit var textViewWeather: TextView
 
     // member variables that hold location info
     protected var mLastLocation: Location? = null
@@ -64,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         editTextContent = findViewById(R.id.editTextContent)
         editTextPostName = findViewById(R.id.editTextPostName)
         mOutput = findViewById(R.id.textViewLocation)
+        textViewWeather = findViewById(R.id.textViewWeather)
         file = File(this.filesDir, FILE_NAME)
         imageFile = File(this.filesDir, IMAGE_FILE_NAME)
         sharedPreferences = getSharedPreferences("MySharedPreMain", MODE_PRIVATE)
@@ -72,7 +83,7 @@ class MainActivity : AppCompatActivity() {
             editText!!.setText(sharedPreferences!!.getString(TAG_KEY, ""))
         }
         if (sharedPreferences!!.contains(LOCATION_KEY)) {
-            mOutput!!.text= sharedPreferences!!.getString(LOCATION_KEY, "")
+            mOutput!!.text = sharedPreferences!!.getString(LOCATION_KEY, "")
         }
         if (sharedPreferences!!.contains(CONTENT_KEY)) {
             editTextContent!!.setText(sharedPreferences!!.getString(CONTENT_KEY, ""))
@@ -97,9 +108,10 @@ class MainActivity : AppCompatActivity() {
         )
         // LocationReques sets how often etc the app receives location updates
         mLocationRequest = LocationRequest()
-        mLocationRequest!!.interval = 10
-        mLocationRequest!!.fastestInterval = 5
+        mLocationRequest!!.interval = 10000
+        mLocationRequest!!.fastestInterval = 5000
         mLocationRequest!!.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
     }
 
     companion object {
@@ -124,8 +136,10 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(pickerIntent, REQUEST_SELECT_IMAGE)
         }
     }
+
     fun save(v: View) {
-        val data = editText!!.text.toString() + "|" + mOutput!!.text.toString()+"|"+editTextContent!!.text.toString()+"|"+editTextPostName.text.toString()
+        val data =
+            editText!!.text.toString() + "|" + mOutput!!.text.toString() + "|" + editTextContent!!.text.toString() + "|" + editTextPostName.text.toString()
         val bitmap = (image_holder!!.drawable as BitmapDrawable).bitmap
         try {
             outputStream = FileOutputStream(file)
@@ -140,6 +154,7 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+
     fun load(v: View?) {
         val length = file!!.length().toInt()
         val bytes = ByteArray(length)
@@ -172,12 +187,12 @@ class MainActivity : AppCompatActivity() {
         }
         generateLabels()
         locate()
+        getTemp()
         super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun locate() {
         mLocationProvider = LocationServices.getFusedLocationProviderClient(this)
-
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -220,7 +235,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     addressLines.append(address.getAddressLine(0))
                 }
-                mOutput!!.text = addressLines
+                mOutput!!.text = "Location: ${addressLines}"
             } else {
                 mOutput!!.text = "WARNING! Geocoder returned more than 1 addresses!"
             }
@@ -240,6 +255,41 @@ class MainActivity : AppCompatActivity() {
             }
             val finalLabelText = labelText
             runOnUiThread { editText.setText(finalLabelText) }
+        }
+    }
+
+    private fun getTemp() {
+        // Instantiate the RequestQueue.
+        if (mLastLocation != null) {
+            val url: String =
+                "https://api.weatherbit.io/v2.0/current?" + "lat=" + mLastLocation?.latitude.toString() + "&lon=" + mLastLocation?.longitude.toString() + "&key=" + api_id1
+            var client = OkHttpClient()
+//        Toast.makeText(this, mLastLocation?.latitude.toString(), Toast.LENGTH_SHORT).show()
+//        val url ="https://api.weatherbit.io/v2.0/current?lat=35.7796&lon=-78.6382&key=b5998796c4cf4407a86c44f67361b265"
+            //Build request
+            val request = Request.Builder().url(url).build()
+            // Execute request
+
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    // get the JSON object
+                    val result = response.body?.string() ?: "[]"
+                    runOnUiThread {
+                        // get the Array from obj of name - "data"
+                        val obj = JSONObject(result)
+                        val jsonArray = obj.getJSONArray("data")
+                        val showResult = jsonArray.getJSONObject(0)
+                        val weatherObject = showResult.getJSONObject("weather")
+
+                        textViewWeather.text ="Weather: "+ weatherObject.getString("description")+" "+ showResult.getString("temp") + " deg Celsius in " + showResult.getString("city_name")
+                    }
+                }
+            })
+
         }
     }
 
