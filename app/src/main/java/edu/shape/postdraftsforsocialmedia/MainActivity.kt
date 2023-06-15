@@ -40,7 +40,6 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-
     // api id for url
     private var api_id1 = "b5998796c4cf4407a86c44f67361b265"
 
@@ -54,8 +53,8 @@ class MainActivity : AppCompatActivity() {
     // member variables that hold location info
     private var mLastLocation: Location? = null
     private var mLocationRequest: LocationRequest? = null
-    private var LatitudeText :String? =""
-    private var LongitudeText :String?  =""
+    private var LatitudeText: String? = ""
+    private var LongitudeText: String? = ""
     private var mGeocoder: Geocoder? = null
     private var mLocationProvider: FusedLocationProviderClient? = null
     private var file: File? = null
@@ -66,9 +65,11 @@ class MainActivity : AppCompatActivity() {
     private var inputStreamImage: FileInputStream? = null
 
     private var sharedPreferences: SharedPreferences? = null
+    private var id: String? =""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        title = "Social Media Draft"
         image_holder = findViewById(R.id.imageView)
         image_holder.setImageResource(R.drawable.ic_launcher_foreground)
         editText = findViewById(R.id.editTextHashtag)
@@ -76,10 +77,12 @@ class MainActivity : AppCompatActivity() {
         editTextPostName = findViewById(R.id.editTextPostName)
         mOutput = findViewById(R.id.textViewLocation)
         textViewWeather = findViewById(R.id.textViewWeather)
-        file = File(this.filesDir, FILE_NAME)
-        imageFile = File(this.filesDir, IMAGE_FILE_NAME)
+        id = intent.getStringExtra("id")
+        file = File(this.filesDir, "${id}.txt")
+        imageFile = File(this.filesDir, "${id}.jpg")
         sharedPreferences = getSharedPreferences("MySharedPreMain", MODE_PRIVATE)
-
+        //Toast.makeText(this, id, Toast.LENGTH_SHORT).show()
+        load()
         if (sharedPreferences!!.contains(TAG_KEY)) {
             editText!!.setText(sharedPreferences!!.getString(TAG_KEY, ""))
         }
@@ -104,15 +107,18 @@ class MainActivity : AppCompatActivity() {
                     if (fineLocationGranted != null && fineLocationGranted) {
                         // Precise location access granted.
                         // permissionOk = true;
-                        Toast.makeText(this, "location permission granted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "location permission granted", Toast.LENGTH_SHORT)
+                            .show()
                     } else if (coarseLocationGranted != null && coarseLocationGranted) {
                         // Only approximate location access granted.
                         // permissionOk = true;
-                        Toast.makeText(this, "location permission granted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "location permission granted", Toast.LENGTH_SHORT)
+                            .show()
                     } else {
                         // permissionOk = false;
                         // No location access granted.
-                        Toast.makeText(this, "location permission not granted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "location permission not granted", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 })
         locationPermissionRequest.launch(
@@ -135,8 +141,8 @@ class MainActivity : AppCompatActivity() {
         const val CONTENT_KEY = "CONTENT_KEY"
         const val LOCATION_KEY = "LOCATION_KEY"
         const val POST_KEY = "POST_KEY"
-        const val FILE_NAME = "id.txt"
-        const val IMAGE_FILE_NAME = "id.jpg"
+//        var FILE_NAME = ".txt"
+//        var IMAGE_FILE_NAME = ".jpg"
     }
 
     fun onCameraClicked(v: View) {
@@ -163,13 +169,20 @@ class MainActivity : AppCompatActivity() {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStreamImage)
             outputStreamImage!!.flush()
             outputStreamImage!!.close()
-            Toast.makeText(this, "data saved", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(this, "data saved", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this,SelectActivity::class.java)
+            startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    fun load(v: View?) {
+    fun cancel(v: View?) {
+        val intent = Intent(this,SelectActivity::class.java)
+        startActivity(intent)
+    }
+
+    fun load() {
         val length = file!!.length().toInt()
         val bytes = ByteArray(length)
         try {
@@ -185,7 +198,7 @@ class MainActivity : AppCompatActivity() {
             val bitmap = BitmapFactory.decodeStream(inputStreamImage)
             inputStreamImage!!.close()
             image_holder.setImageBitmap(bitmap)
-            Toast.makeText(baseContext, "data loaded", Toast.LENGTH_SHORT).show()
+            Toast.makeText(baseContext, id, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -220,7 +233,7 @@ class MainActivity : AppCompatActivity() {
                 it, object : LocationCallback() {
                     override fun onLocationResult(result: LocationResult) {
                         mLastLocation = result.lastLocation!!
-                        LatitudeText= mLastLocation!!.latitude.toString()
+                        LatitudeText = mLastLocation!!.latitude.toString()
                         LongitudeText = mLastLocation!!.longitude.toString()
                     }
                 }, Looper.getMainLooper()
@@ -269,7 +282,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getTemp() {
         // Instantiate the RequestQueue.
-        if (LatitudeText  != "") {
+        if (LatitudeText != "") {
             val url: String =
                 "https://api.weatherbit.io/v2.0/current?" + "lat=" + LatitudeText + "&lon=" + LongitudeText + "&key=" + api_id1
             var client = OkHttpClient()
@@ -294,7 +307,10 @@ class MainActivity : AppCompatActivity() {
                         val showResult = jsonArray.getJSONObject(0)
                         val weatherObject = showResult.getJSONObject("weather")
 
-                        textViewWeather.text ="Weather: "+ weatherObject.getString("description")+" "+ showResult.getString("temp") + " deg Celsius"
+                        textViewWeather.text =
+                            "Weather: " + weatherObject.getString("description") + " " + showResult.getString(
+                                "temp"
+                            ) + " deg Celsius"
                     }
                 }
             })
@@ -316,7 +332,7 @@ class MainActivity : AppCompatActivity() {
             mRecorder = MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            val fileName = filesDir.path + "/test.m4a"
+            val fileName = filesDir.path + "/${id}.m4a"
             val file = File(fileName)
             mRecorder.setOutputFile(file)
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB)
@@ -352,7 +368,7 @@ class MainActivity : AppCompatActivity() {
             mPlayer = MediaPlayer()
             try {
                 Toast.makeText(this, "play recording", Toast.LENGTH_LONG).show()
-                val fileName = filesDir.path + "/test.m4a"
+                val fileName = filesDir.path + "/${id}.m4a"
                 mPlayer.setDataSource(fileName)
                 mPlayer.prepare()
                 mPlayer.start()
