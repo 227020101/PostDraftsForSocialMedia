@@ -29,7 +29,6 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import okhttp3.*
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
@@ -65,7 +64,7 @@ class MainActivity : AppCompatActivity() {
     private var inputStreamImage: FileInputStream? = null
 
     private var sharedPreferences: SharedPreferences? = null
-    private var id: String? =""
+    private var id: String =""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -77,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         editTextPostName = findViewById(R.id.editTextPostName)
         mOutput = findViewById(R.id.textViewLocation)
         textViewWeather = findViewById(R.id.textViewWeather)
-        id = intent.getStringExtra("id")
+        id = intent.getStringExtra("id").toString()
         file = File(this.filesDir, "${id}.txt")
         imageFile = File(this.filesDir, "${id}.jpg")
         sharedPreferences = getSharedPreferences("MySharedPreMain", MODE_PRIVATE)
@@ -141,8 +140,7 @@ class MainActivity : AppCompatActivity() {
         const val CONTENT_KEY = "CONTENT_KEY"
         const val LOCATION_KEY = "LOCATION_KEY"
         const val POST_KEY = "POST_KEY"
-//        var FILE_NAME = ".txt"
-//        var IMAGE_FILE_NAME = ".jpg"
+
     }
 
     fun onCameraClicked(v: View) {
@@ -169,6 +167,10 @@ class MainActivity : AppCompatActivity() {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStreamImage)
             outputStreamImage!!.flush()
             outputStreamImage!!.close()
+            val idInt = id.toInt()
+            val contacts = Contacts(idInt,editTextPostName.text.toString())
+            val dataBase = SqliteDatabase(this)
+            dataBase.updateContacts(contacts)
 //            Toast.makeText(this, "data saved", Toast.LENGTH_SHORT).show()
             val intent = Intent(this,SelectActivity::class.java)
             startActivity(intent)
@@ -198,7 +200,6 @@ class MainActivity : AppCompatActivity() {
             val bitmap = BitmapFactory.decodeStream(inputStreamImage)
             inputStreamImage!!.close()
             image_holder.setImageBitmap(bitmap)
-            Toast.makeText(baseContext, id, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -332,6 +333,7 @@ class MainActivity : AppCompatActivity() {
             mRecorder = MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+//            Toast.makeText(this,id,Toast.LENGTH_LONG).show()
             val fileName = filesDir.path + "/${id}.m4a"
             val file = File(fileName)
             mRecorder.setOutputFile(file)
@@ -341,10 +343,10 @@ class MainActivity : AppCompatActivity() {
             try {
                 mRecorder.prepare()
             } catch (e: IOException) {
-                Toast.makeText(this, "${e.localizedMessage}", Toast.LENGTH_LONG).show()
+//                Toast.makeText(this, "${e.localizedMessage}", Toast.LENGTH_LONG).show()
                 return
             }
-            Toast.makeText(this, "recording started ${fileName}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "recording started", Toast.LENGTH_LONG).show()
             val myButton = findViewById<Button>(R.id.button3)
             myButton.setText("Stop")
             mRecorder.start()

@@ -16,8 +16,7 @@ class SqliteDatabase internal constructor(context: Context?) :
         val createContactTable = ("CREATE TABLE "
                 + TABLE_CONTACTS + "(" + COLUMN_ID
                 + " INTEGER PRIMARY KEY,"
-                + COLUMN_NAME + " TEXT,"
-                + COLUMN_NO + " INTEGER" + ")")
+                + COLUMN_NAME + " TEXT," + ")")
         db.execSQL(createContactTable)
     }
     override fun onUpgrade(
@@ -76,6 +75,5 @@ class SqliteDatabase internal constructor(context: Context?) :
         private const val TABLE_CONTACTS = "Contacts"
         private const val COLUMN_ID = "_id"
         private const val COLUMN_NAME = "contactName"
-        private const val COLUMN_NO = "phoneNumber"
     }
 }
