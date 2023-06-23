@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 
     fun save(v: View) {
         val data =
-            editText!!.text.toString() + "|" + mOutput!!.text.toString() + "|" + editTextContent!!.text.toString() + "|" + editTextPostName.text.toString()
+            editText!!.text.toString() + "|" + mOutput!!.text.toString() + "|" + editTextContent!!.text.toString() + "|" + editTextPostName.text.toString()+"|"+textViewWeather.text.toString()
         val bitmap = (image_holder!!.drawable as BitmapDrawable).bitmap
         try {
             outputStream = FileOutputStream(file)
@@ -196,6 +196,7 @@ class MainActivity : AppCompatActivity() {
             mOutput!!.text = data.split("|").toTypedArray()[1]
             editTextContent!!.setText(data.split("|").toTypedArray()[2])
             editTextPostName!!.setText(data.split("|").toTypedArray()[3])
+            textViewWeather!!.text = data.split("|").toTypedArray()[4]
             inputStreamImage = FileInputStream(imageFile)
             val bitmap = BitmapFactory.decodeStream(inputStreamImage)
             inputStreamImage!!.close()
