@@ -1,4 +1,4 @@
-package edu.shape.postdraftsforsocialmedia
+package edu.shape.postdraftsforsocialmedia.Controller
 
 import android.app.Activity
 import android.content.Context
@@ -8,6 +8,10 @@ import android.view.ViewGroup
 import android.widget.Filter
 import android.widget.Filterable
 import androidx.recyclerview.widget.RecyclerView
+import edu.shape.postdraftsforsocialmedia.Model.ContactViewHolder
+import edu.shape.postdraftsforsocialmedia.Model.Contacts
+import edu.shape.postdraftsforsocialmedia.Model.SqliteDatabase
+import edu.shape.postdraftsforsocialmedia.R
 
 import java.util.*
 internal class ContactAdapter(private val context: Context, listContacts: ArrayList<Contacts>) :
@@ -71,7 +75,7 @@ internal class ContactAdapter(private val context: Context, listContacts: ArrayL
         return listContacts.size
     }
     private fun editTaskDialog(contacts: Contacts) {
-        val intent = Intent(this.context,MainActivity::class.java)
+        val intent = Intent(this.context, MainActivity::class.java)
         intent.putExtra("id",contacts.id.toString())
         context.startActivity(intent)
     }

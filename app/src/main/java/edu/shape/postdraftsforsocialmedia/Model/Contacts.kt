@@ -1,4 +1,4 @@
-package edu.shape.postdraftsforsocialmedia
+package edu.shape.postdraftsforsocialmedia.Model
 
 class Contacts {
     var id = 0
@@ -6,7 +6,7 @@ class Contacts {
     internal constructor(name: String) {
         this.name = name
     }
-    internal constructor(id: Int, name: String) {
+    constructor(id: Int, name: String) {
         this.id = id
         this.name = name
     }
