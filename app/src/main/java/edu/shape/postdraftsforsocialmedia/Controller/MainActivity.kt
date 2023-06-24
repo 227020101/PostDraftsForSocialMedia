@@ -1,4 +1,4 @@
-package edu.shape.postdraftsforsocialmedia
+package edu.shape.postdraftsforsocialmedia.Controller
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -28,6 +28,9 @@ import com.google.android.gms.location.*
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
+import edu.shape.postdraftsforsocialmedia.Model.Contacts
+import edu.shape.postdraftsforsocialmedia.Model.SqliteDatabase
+import edu.shape.postdraftsforsocialmedia.R
 import okhttp3.*
 import org.json.JSONObject
 import java.io.File
@@ -172,7 +175,7 @@ class MainActivity : AppCompatActivity() {
             val dataBase = SqliteDatabase(this)
             dataBase.updateContacts(contacts)
 //            Toast.makeText(this, "data saved", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this,SelectActivity::class.java)
+            val intent = Intent(this, SelectActivity::class.java)
             startActivity(intent)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -180,7 +183,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun cancel(v: View?) {
-        val intent = Intent(this,SelectActivity::class.java)
+        val intent = Intent(this, SelectActivity::class.java)
         startActivity(intent)
     }
 
