@@ -1,11 +1,11 @@
-package edu.shape.postdraftsforsocialmedia
+package edu.shape.postdraftsforsocialmedia.Model
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import java.util.*
-class SqliteDatabase internal constructor(context: Context?) :
+class SqliteDatabase(context: Context?) :
     SQLiteOpenHelper(
         context,
         DATABASE_NAME,
@@ -72,7 +72,7 @@ class SqliteDatabase internal constructor(context: Context?) :
     companion object {
         private const val DATABASE_VERSION = 5
         private const val DATABASE_NAME = "Contacts"
-        private const val TABLE_CONTACTS = "Contacts"
+        const val TABLE_CONTACTS = "Contacts"
         private const val COLUMN_ID = "_id"
         private const val COLUMN_NAME = "contactName"
     }
