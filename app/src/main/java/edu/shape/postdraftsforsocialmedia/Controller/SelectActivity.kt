@@ -20,7 +20,7 @@ class SelectActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select)
-        title = "Social Media Draft"
+        title = "Social Draft Genius"
         loadList()
         val btnAdd: Button = findViewById(R.id.btnAdd)
         btnAdd.setOnClickListener { addTaskDialog() }

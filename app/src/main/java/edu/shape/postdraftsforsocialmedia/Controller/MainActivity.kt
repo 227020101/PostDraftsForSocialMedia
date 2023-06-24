@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        title = "Social Media Draft"
+        title = "Social Draft Genius"
         image_holder = findViewById(R.id.imageView)
         image_holder.setImageResource(R.drawable.ic_launcher_foreground)
         editText = findViewById(R.id.editTextHashtag)
